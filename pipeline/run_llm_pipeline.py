@@ -30,10 +30,11 @@ def run_pipeline(limit: int = 10):
     # Get PRs already reviewed so we don't repeat
     reviewed_pr_ids = session.query(PRIssue.github_pr_id).distinct().all()
     reviewed_pr_ids = {r[0] for r in reviewed_pr_ids}
-
+    skip_ids = {7411, 7390, 6925, 7308}
     prs = session.query(PullRequest).all()
-    unreviewed = [pr for pr in prs if pr.github_id not in reviewed_pr_ids]
-
+    unreviewed = [pr for pr in prs
+                  if pr.github_id not in reviewed_pr_ids
+                  and pr.github_id not in skip_ids]
     logger.info(f"Total PRs: {len(prs)} | Already reviewed: {len(reviewed_pr_ids)} | To process: {min(limit, len(unreviewed))}")
 
     processed   = 0
