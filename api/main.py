@@ -3,8 +3,10 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
 import logging
 
 from db.database import init_db, get_session
@@ -28,8 +30,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# ── Request/Response Models ───────────────────────────────────
+
+# ── Models ────────────────────────────────────────────────────
 
 class PredictRequest(BaseModel):
     explanation: str
@@ -41,38 +50,22 @@ class PredictResponse(BaseModel):
     class_probs:     dict
 
 
-# ── Health check ──────────────────────────────────────────────
-
-@app.get("/")
-def root():
-    return {
-        "project": "ReviewIQ",
-        "status":  "running",
-        "version": "1.0.0",
-        "docs":    "/docs"
-    }
+# ── Core routes ───────────────────────────────────────────────
 
 @app.get("/health")
 def health():
     return {"status": "healthy"}
 
-
-# ── Analytics endpoints ───────────────────────────────────────
-
 @app.get("/api/summary")
 def get_summary():
-    """Return top-level summary metrics for the dashboard."""
     try:
         df = load_prs_as_dataframe()
         return get_summary_metrics(df)
     except Exception as e:
-        logger.error(f"Summary error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/api/contributors")
 def get_contributors():
-    """Return per-contributor PR stats."""
     try:
         df = load_prs_as_dataframe()
         stats = get_contributor_stats(df)
@@ -80,10 +73,8 @@ def get_contributors():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/bottlenecks")
 def get_bottlenecks():
-    """Return PRs that took longer than 24h to merge."""
     try:
         df = load_prs_as_dataframe()
         bn = get_review_bottlenecks(df)
@@ -91,10 +82,8 @@ def get_bottlenecks():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/issues")
 def get_issues():
-    """Return all LLM-detected issues with breakdown."""
     try:
         engine = init_db()
         session = get_session(engine)
@@ -110,22 +99,18 @@ def get_issues():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/issues/summary")
 def get_issues_summary():
-    """Return issue count breakdown by type and severity."""
     try:
         engine = init_db()
         session = get_session(engine)
         issues = session.query(PRIssue).all()
         session.close()
-
         by_type = {}
         by_severity = {}
         for i in issues:
-            by_type[i.issue_type]     = by_type.get(i.issue_type, 0) + 1
-            by_severity[i.severity]   = by_severity.get(i.severity, 0) + 1
-
+            by_type[i.issue_type]   = by_type.get(i.issue_type, 0) + 1
+            by_severity[i.severity] = by_severity.get(i.severity, 0) + 1
         return {
             "total":       len(issues),
             "by_type":     by_type,
@@ -134,22 +119,12 @@ def get_issues_summary():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# ── ML prediction endpoint ────────────────────────────────────
-
 @app.post("/api/predict", response_model=PredictResponse)
 def predict(request: PredictRequest):
-    """
-    Predict issue type from explanation and suggestion text.
-    Uses the trained ML classifier — no LLM call needed.
-    """
     try:
         result = predict_issue_type(request.explanation, request.suggestion)
         return result
     except FileNotFoundError:
-        raise HTTPException(
-            status_code=503,
-            detail="ML model not trained yet. Run ml/trainer.py first."
-        )
+        raise HTTPException(status_code=503, detail="ML model not trained yet.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
