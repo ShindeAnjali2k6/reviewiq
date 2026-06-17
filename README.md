@@ -61,3 +61,6 @@ reviewiq/
     ├── hooks/
     └── services/
 ```
+## 👨‍💻 Built By
+
+**Anjali Shinde** • Software Engineering & AI
