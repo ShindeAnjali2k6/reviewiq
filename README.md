@@ -1,71 +1,63 @@
 # ⚡ ReviewIQ
 
-**AI-powered Pull Request analytics for engineering teams.**
+AI-powered GitHub Pull Request analytics platform that collects real PR data, analyzes engineering productivity, detects code review issues, and visualizes repository insights through an interactive dashboard.
 
-ReviewIQ ingests GitHub PRs, analyzes engineering productivity, detects merge-time bottlenecks, and classifies issues using ML — all surfaced through a clean, real-time dashboard.
+## ✨ Features
 
----
+* 📊 **PR Analytics** — Track contributor activity, merge-time trends, and repository health
+* 🚨 **Issue Detection** — Identify code quality issues from pull request changes
+* ⏱️ **Bottleneck Analysis** — Surface PRs with abnormal merge delays and review bottlenecks
+* 🧠 **ML Classifier** — Predict issue categories using a TF-IDF + Logistic Regression model
+* 🔌 **REST API** — FastAPI backend with documented endpoints
+* 🌙 **Interactive Dashboard** — React-based analytics dashboard with charts and filters
 
-## 🔍 Overview
+## 📈 Results
 
-Engineering teams ship PRs every day, but rarely have visibility into *where time goes*. ReviewIQ analyzes your pull request history to surface contributor productivity, merge-time trends, and recurring issue patterns — powered by a TF-IDF + Logistic Regression classifier trained on real PR data.
-
-## ✨ Key Features
-
-- 📊 **Dashboard** — KPIs, merge-time trends, PR size, and issue breakdowns at a glance
-- 👥 **Contributors** — Searchable, sortable leaderboard with productivity metrics
-- 🐛 **Issues** — ML-classified issues with severity, explanations, and suggested fixes
-- ⏱️ **Bottlenecks** — Surface PRs with abnormal merge delays and risk levels
-- 🧠 **ML Classifier** — Live prediction playground with confidence + probability breakdown
-- 🌙 Dark, glassmorphic UI inspired by Linear, Datadog, and Vercel
+* 50 Pull Requests analyzed
+* 110 Issues detected
+* 15 Contributors tracked
+* 72.7% ML classification accuracy
 
 ## 🛠️ Tech Stack
 
-**Backend:** FastAPI · SQLAlchemy · SQLite/PostgreSQL · GitHub API · TF-IDF · Logistic Regression
-**Frontend:** React · TypeScript · Vite · TailwindCSS · Framer Motion · Recharts · Axios
+**Backend:** FastAPI · SQLAlchemy · SQLite/PostgreSQL · GitHub REST API
+**Data & ML:** Pandas · scikit-learn · TF-IDF · Logistic Regression
+**Frontend:** React · TypeScript · Vite · TailwindCSS · Recharts · Axios
+
+## 💡 Why ReviewIQ
+
+Software teams generate large volumes of pull requests, but review trends, bottlenecks, and recurring issues often remain hidden. ReviewIQ transforms GitHub PR history into actionable engineering insights through analytics, machine learning, and interactive visualizations.
 
 ## 🚀 Quick Start
 
 ```bash
 # Backend
 cd reviewiq
-python -m venv venv && venv\Scripts\activate   # or source venv/bin/activate
+python -m venv venv
 pip install -r requirements.txt
 uvicorn api.main:app --reload --port 8000
 
-# Frontend (new terminal)
+# Frontend
 cd reviewiq-frontend-app
 npm install
 npm run dev
 ```
 
-Visit `http://localhost:5173` 🎉 — backend runs at `http://localhost:8000`.
+Frontend: `http://localhost:5173`
+Backend: `http://localhost:8000/docs`
 
 ## 📁 Project Structure
 
-```
+```text
 reviewiq/
-├── api/                  # FastAPI app + routes
-├── db/                   # Database models & session
+├── api/                  # FastAPI routes and endpoints
+├── db/                   # Database models and session management
 ├── ingestion/            # GitHub PR ingestion pipeline
-├── ml/                   # TF-IDF + classifier model
+├── ml/                   # ML classifier and prediction logic
 ├── pipeline/             # Analytics processing
 └── reviewiq-frontend-app/
-    └── src/
-        ├── pages/        # Dashboard, Contributors, Issues, Bottlenecks, Classifier
-        ├── components/   # UI primitives, charts, layout
-        ├── hooks/        # Typed API data hooks
-        └── services/     # Axios API client
+    ├── pages/
+    ├── components/
+    ├── hooks/
+    └── services/
 ```
-
-## 💡 Why ReviewIQ
-
-Most teams only *feel* their bottlenecks — slow reviews, stalled PRs, recurring bugs — without data to back it up. ReviewIQ turns raw PR history into actionable engineering insight, built to look and feel like a real production analytics product.
-
-## 🤝 Contributing
-
-Contributions are welcome! Fork the repo, create a feature branch, and open a PR.
-
-## 📄 License
-
-MIT
